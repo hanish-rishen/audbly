@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import VoiceRecorder from '@/components/VoiceRecoder';
 import { analyzeSpeech } from '@/utils/geminiAnalysis';
+// import {GetStartedPage} from '@/components/GetStartedPage';
 
 export default function Home() {
   const [analysis, setAnalysis] = useState('');
