@@ -6,6 +6,7 @@ import { motion, useInView } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from 'next/navigation';
 import { SignInButton, SignUpButton, useAuth, UserButton } from "@clerk/nextjs";
+import Image from 'next/image';
 
 export default function Home() {
   const [whyChooseUsTypedText, setWhyChooseUsTypedText] = useState(Array(5).fill(""));
@@ -20,6 +21,29 @@ export default function Home() {
     "Our intelligent chatbot provides instant, helpful responses tailored to your needs.",
     "Hear an improved version of your speech with our high-quality voice cloning technology.",
     "Continuously improve your communication skills with our comprehensive feedback and practice tools.",
+  ];
+
+  const whyChooseUsItems = [
+    {
+      title: "Personalized Experience",
+      description: "Our platform tailors the feedback and suggestions to your unique voice and speaking style. No generic advice—everything is customized to help you become the best speaker you can be.",
+    },
+    {
+      title: "Real-Time Feedback",
+      description: "No more waiting for days or weeks to get feedback on your speech. With our real-time analysis, you can immediately see where you can improve and start working on it right away.",
+    },
+    {
+      title: "Easy to Use",
+      description: "We've made sure our platform is user-friendly and intuitive, so you can focus on what really matters—improving your speech. Just speak, analyze, and improve, all in a few simple steps.",
+    },
+    {
+      title: "Cutting-Edge Technology",
+      description: "We leverage the latest advancements in AI and voice technology to provide you with accurate, insightful, and actionable feedback. Our voice cloning feature ensures you hear the best version of yourself, pushing you towards continuous improvement.",
+    },
+    {
+      title: "Support Anytime, Anywhere",
+      description: "Whether you're at home, in the office, or on the go, our platform is accessible from any device. Plus, with our chatbot ready to answer your questions, you're never alone on your journey to better communication.",
+    },
   ];
 
   useEffect(() => {
@@ -45,29 +69,6 @@ export default function Home() {
       router.push('/tool');
     }
   }, [isSignedIn, router]);
-
-  const whyChooseUsItems = [
-    {
-      title: "Personalized Experience",
-      description: "Our platform tailors the feedback and suggestions to your unique voice and speaking style. No generic advice—everything is customized to help you become the best speaker you can be.",
-    },
-    {
-      title: "Real-Time Feedback",
-      description: "No more waiting for days or weeks to get feedback on your speech. With our real-time analysis, you can immediately see where you can improve and start working on it right away.",
-    },
-    {
-      title: "Easy to Use",
-      description: "We've made sure our platform is user-friendly and intuitive, so you can focus on what really matters—improving your speech. Just speak, analyze, and improve, all in a few simple steps.",
-    },
-    {
-      title: "Cutting-Edge Technology",
-      description: "We leverage the latest advancements in AI and voice technology to provide you with accurate, insightful, and actionable feedback. Our voice cloning feature ensures you hear the best version of yourself, pushing you towards continuous improvement.",
-    },
-    {
-      title: "Support Anytime, Anywhere",
-      description: "Whether you're at home, in the office, or on the go, our platform is accessible from any device. Plus, with our chatbot ready to answer your questions, you're never alone on your journey to better communication.",
-    },
-  ];
 
   return (
     <div className="relative min-h-screen">
@@ -176,7 +177,7 @@ export default function Home() {
           }
         >
           <div className="relative z-20 flex items-center justify-center h-full w-full">
-            <img src="/images/Audbly.png" alt="Audbly" className="w-full h-full object-fit" />
+            <Image src="/images/Audbly.png" alt="Audbly" layout="fill" objectFit="cover" />
           </div>
         </ContainerScroll>
 

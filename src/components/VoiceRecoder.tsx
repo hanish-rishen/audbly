@@ -85,7 +85,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         audioContext.close();
       }
     };
-  }, [onTranscriptionUpdate]);
+  }, [onTranscriptionUpdate, audioContext]); // Added audioContext to the dependency array
 
   const stopRecording = useCallback(() => {
     if (recognition) {

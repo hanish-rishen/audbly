@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from "@clerk/nextjs";
+import Image from 'next/image';
 
 interface ChatbotProps {
   analysis: string;
@@ -93,7 +94,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ analysis }) => {
                 >
                   {message.isUser ? (
                     user?.imageUrl ? (
-                      <img src={user.imageUrl} alt="User" className="w-full h-full object-cover" />
+                      <Image src={user.imageUrl} alt="User" layout="fill" objectFit="cover" />
                     ) : (
                       '😊'
                     )
