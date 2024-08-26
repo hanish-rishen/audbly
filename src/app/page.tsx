@@ -62,6 +62,7 @@ export default function Home() {
         }, 10); // Faster typing speed
       });
     }
+// eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInView]);
 
   useEffect(() => {
