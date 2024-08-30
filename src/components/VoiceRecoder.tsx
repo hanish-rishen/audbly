@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-const VoiceRecorder: React.FC<VoiceRecorderProps> = React.memo(({
+const VoiceRecoder: React.FC<VoiceRecorderProps> = React.memo(({
   onAnalyze,
   onRecordingStateChange,
   onTranscriptionUpdate,
@@ -87,7 +87,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = React.memo(({
         audioContext.close();
       }
     };
-  }, [onTranscriptionUpdate]);
+  }, [onTranscriptionUpdate, audioContext]); // Add audioContext to the dependency array
 
   const stopRecording = useCallback(() => {
     if (recognition) {
@@ -130,4 +130,6 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = React.memo(({
   );
 });
 
-export default VoiceRecorder;
+VoiceRecoder.displayName = 'VoiceRecoder';
+
+export default VoiceRecoder;
