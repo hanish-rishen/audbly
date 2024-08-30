@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
+import { debounce } from 'lodash';
 
 interface VoiceRecorderProps {
   onAnalyze: (transcript: string) => void;
@@ -23,44 +24,43 @@ const VoiceRecoder: React.FC<VoiceRecorderProps> = React.memo(({
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [transcription, setTranscription] = useState("");
-  const [transcription2, setTranscription2] = useState("");
-  const [recognition, setRecognition] = useState<any | null>(null);
-  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-  const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
+  const recognitionRef = useRef<any | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+
+  const debouncedTranscriptionUpdate = useMemo(
+    () => debounce(onTranscriptionUpdate, 300),
+    [onTranscriptionUpdate]
+  );
 
   const startRecording = useCallback(() => {
-    if (recognition && !isRecording) {
+    if (recognitionRef.current && !isRecording) {
       const newAudioContext = new (window.AudioContext || window.webkitAudioContext)();
       const newAnalyser = newAudioContext.createAnalyser();
       newAnalyser.fftSize = 256;
-      setAudioContext(newAudioContext);
-      setAnalyser(newAnalyser);
+      audioContextRef.current = newAudioContext;
+      analyserRef.current = newAnalyser;
 
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
           const source = newAudioContext.createMediaStreamSource(stream);
           source.connect(newAnalyser);
-          recognition.start();
+          recognitionRef.current.start();
           setIsRecording(true);
           onRecordingStateChange(true);
           setTranscription("");
-          setTranscription2("");
         })
         .catch(error => {
           console.error('Error accessing microphone:', error);
         });
     }
-  }, [recognition, isRecording, onRecordingStateChange]);
+  }, [isRecording, onRecordingStateChange]);
 
   useEffect(() => {
     if (voiceRecorderRef && voiceRecorderRef.current) {
-      voiceRecorderRef.current.startRecording = () => {
-        if (!isRecording) {
-          startRecording();
-        }
-      };
+      voiceRecorderRef.current.startRecording = startRecording;
     }
-  }, [voiceRecorderRef, isRecording, startRecording]);
+  }, [voiceRecorderRef, startRecording]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && "webkitSpeechRecognition" in window) {
@@ -75,27 +75,26 @@ const VoiceRecoder: React.FC<VoiceRecorderProps> = React.memo(({
           .map((result: any) => result[0].transcript)
           .join(" ");
         setTranscription(transcript);
-        setTranscription2(transcript);
-        onTranscriptionUpdate(transcript);
+        debouncedTranscriptionUpdate(transcript);
       };
 
-      setRecognition(newRecognition);
+      recognitionRef.current = newRecognition;
     }
 
     return () => {
-      if (audioContext) {
-        audioContext.close();
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
       }
     };
-  }, [onTranscriptionUpdate, audioContext]); // Add audioContext to the dependency array
+  }, [debouncedTranscriptionUpdate]);
 
   const stopRecording = useCallback(() => {
-    if (recognition) {
-      recognition.stop();
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
       setIsRecording(false);
       onRecordingStateChange(false);
     }
-  }, [recognition, onRecordingStateChange]);
+  }, [onRecordingStateChange]);
 
   return (
     <div className="flex justify-center items-center h-full">
