@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 
 interface VoiceRecorderProps {
@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
+const VoiceRecorder: React.FC<VoiceRecorderProps> = React.memo(({
   onAnalyze,
   onRecordingStateChange,
   onTranscriptionUpdate,
@@ -29,20 +29,28 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
 
   const startRecording = useCallback(() => {
-    if (recognition && audioContext && analyser) {
-      recognition.start();
-      setIsRecording(true);
-      onRecordingStateChange(true);
-      setTranscription("");
-      setTranscription2("");
+    if (recognition && !isRecording) {
+      const newAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const newAnalyser = newAudioContext.createAnalyser();
+      newAnalyser.fftSize = 256;
+      setAudioContext(newAudioContext);
+      setAnalyser(newAnalyser);
 
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
-          const source = audioContext.createMediaStreamSource(stream);
-          source.connect(analyser);
+          const source = newAudioContext.createMediaStreamSource(stream);
+          source.connect(newAnalyser);
+          recognition.start();
+          setIsRecording(true);
+          onRecordingStateChange(true);
+          setTranscription("");
+          setTranscription2("");
+        })
+        .catch(error => {
+          console.error('Error accessing microphone:', error);
         });
     }
-  }, [recognition, audioContext, analyser, onRecordingStateChange]);
+  }, [recognition, isRecording, onRecordingStateChange]);
 
   useEffect(() => {
     if (voiceRecorderRef && voiceRecorderRef.current) {
@@ -74,18 +82,12 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       setRecognition(newRecognition);
     }
 
-    const newAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const newAnalyser = newAudioContext.createAnalyser();
-    newAnalyser.fftSize = 256;
-    setAudioContext(newAudioContext);
-    setAnalyser(newAnalyser);
-
     return () => {
       if (audioContext) {
         audioContext.close();
       }
     };
-  }, [onTranscriptionUpdate, audioContext]); // Added audioContext to the dependency array
+  }, [onTranscriptionUpdate]);
 
   const stopRecording = useCallback(() => {
     if (recognition) {
@@ -126,6 +128,6 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       </motion.button>
     </div>
   );
-};
+});
 
 export default VoiceRecorder;

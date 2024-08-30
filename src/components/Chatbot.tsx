@@ -1,6 +1,12 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from 'react';
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { motion, AnimatePresence } from 'framer-motion';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { FiSend } from "react-icons/fi";
+import { FaUser, FaRobot } from "react-icons/fa";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { useUser } from "@clerk/nextjs";
 import Image from 'next/image';
 
@@ -27,8 +33,8 @@ const Chatbot: React.FC<ChatbotProps> = ({ analysis }) => {
   const { user } = useUser();
 
   useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, currentResponse, isThinking]);
 
@@ -75,8 +81,8 @@ const Chatbot: React.FC<ChatbotProps> = ({ analysis }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg overflow-hidden shadow-xl">
-      <div ref={chatContainerRef} className="flex-grow overflow-y-auto p-4 space-y-4">
+    <div className="h-full flex flex-col bg-gray-800 rounded-2xl overflow-hidden">
+      <div className="flex-grow overflow-y-auto p-4 max-h-[calc(100vh-200px)] min-h-[300px]" ref={chatContainerRef}>
         <AnimatePresence>
           {messages.map((message, index) => (
             <motion.div
@@ -85,59 +91,43 @@ const Chatbot: React.FC<ChatbotProps> = ({ analysis }) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+              className={`flex mb-4 ${
+                message.isUser ? 'justify-end' : 'justify-start'
+              }`}
             >
-              <div className={`flex items-end space-x-2 ${message.isUser ? 'flex-row-reverse' : ''}`}>
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  className={`w-10 h-10 rounded-full flex-shrink-0 ${message.isUser ? 'bg-green-500' : 'bg-blue-500'} flex items-center justify-center shadow-md overflow-hidden ${message.isUser ? 'ml-2' : 'mr-2'}`}
-                >
+              <div className={`flex items-start space-x-2 ${
+                message.isUser ? 'flex-row-reverse space-x-reverse' : ''
+              }`}>
+                <div className={`p-3 rounded-full ${
+                  message.isUser ? 'bg-red-700' : 'bg-gray-600'
+                } flex items-center justify-center`}>
                   {message.isUser ? (
                     user?.imageUrl ? (
-                      <Image src={user.imageUrl} alt="User" layout="fill" objectFit="cover" />
+                      <Image src={user.imageUrl} alt="User" width={24} height={24} className="rounded-full" />
                     ) : (
-                      '😊'
+                      <FaUser size={24} />
                     )
-                  ) : '🤖'}
-                </motion.div>
-                <motion.div
-                  initial={{ scale: 0.9 }}
-                  animate={{ scale: 1 }}
-                  className={`p-3 rounded-2xl ${message.isUser ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-200'} max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg shadow-lg`}
-                >
+                  ) : <FaRobot size={24} />}
+                </div>
+                <div className={`p-3 sm:p-4 rounded-lg ${
+                  message.isUser ? 'bg-red-700' : 'bg-gray-600'
+                } max-w-[80%] text-white shadow-lg text-sm sm:text-base flex items-center`}>
                   {message.text}
-                </motion.div>
+                </div>
               </div>
             </motion.div>
           ))}
         </AnimatePresence>
         {isThinking && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             className="flex justify-start"
           >
-            <div className="flex items-end space-x-2">
-              <div className="w-10 h-10 rounded-full flex-shrink-0 bg-blue-500 flex items-center justify-center shadow-md mr-2">
-                🤖
-              </div>
-              <div className="p-3 rounded-2xl bg-gray-700 text-gray-200 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg shadow-lg">
-                <motion.div
-                  className="flex space-x-1"
-                  animate={{
-                    scale: [1, 1.1, 1],
-                    transition: {
-                      repeat: Infinity,
-                      duration: 1,
-                      ease: "easeInOut",
-                    },
-                  }}
-                >
-                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                </motion.div>
-              </div>
+            <div className="bg-gray-600 p-3 rounded-lg flex items-center space-x-2">
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
             </div>
           </motion.div>
         )}
@@ -147,16 +137,16 @@ const Chatbot: React.FC<ChatbotProps> = ({ analysis }) => {
             animate={{ opacity: 1, y: 0 }}
             className="flex justify-start"
           >
-            <div className="flex items-end space-x-2">
-              <div className="w-10 h-10 rounded-full flex-shrink-0 bg-blue-500 flex items-center justify-center shadow-md mr-2">
-                🤖
+            <div className="flex items-start space-x-2">
+              <div className="p-3 rounded-full bg-gray-600 flex items-center justify-center">
+                <FaRobot size={24} />
               </div>
-              <div className="p-3 rounded-2xl bg-gray-700 text-gray-200 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg shadow-lg">
+              <div className="p-3 sm:p-4 rounded-lg bg-gray-600 max-w-[80%] text-white shadow-lg text-sm sm:text-base flex items-center">
                 {currentResponse}
                 <motion.span
                   animate={{ opacity: [0, 1, 0] }}
                   transition={{ repeat: Infinity, duration: 1 }}
-                  className="inline-block w-2 h-4 ml-1 bg-blue-400"
+                  className="inline-block w-2 h-4 ml-1 bg-white"
                 />
               </div>
             </div>
@@ -164,37 +154,31 @@ const Chatbot: React.FC<ChatbotProps> = ({ analysis }) => {
         )}
         <div ref={messagesEndRef} />
       </div>
-      <form onSubmit={handleSubmit} className="p-4 bg-gray-800 shadow-inner">
-        <div className="flex space-x-2">
-          <input
+      <div className="border-t border-gray-700 bg-gray-900 p-4">
+        <form onSubmit={handleSubmit} className="flex w-full items-center space-x-2">
+          <Input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-grow p-3 rounded-full bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300 ease-in-out"
-            disabled={isLoading}
+            placeholder="Ask about the speech analysis..."
+            className="flex-grow bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-2 focus:ring-red-500 rounded-full text-base px-4 py-2"
           />
-          <motion.button
+          <Button
             type="submit"
-            className="bg-green-600 text-white p-3 rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300 ease-in-out"
             disabled={isLoading}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            className="px-6 py-2 text-lg font-semibold text-white bg-red-700 rounded-full transition-all duration-300 cursor-pointer"
           >
             {isLoading ? (
-              <motion.div
-                className="w-6 h-6 border-3 border-white border-t-transparent rounded-full"
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-              />
+              <span className="animate-spin">⏳</span>
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
+              <>
+                <FiSend className="mr-2" />
+                <span className="hidden sm:inline">Send</span>
+              </>
             )}
-          </motion.button>
-        </div>
-      </form>
+          </Button>
+        </form>
+      </div>
     </div>
   );
 };

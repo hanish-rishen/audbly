@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import VoiceRecorder from '@/components/VoiceRecoder';
 import { analyzeSpeech } from '@/utils/geminiAnalysis';
@@ -8,8 +8,8 @@ import Chatbot from '@/components/Chatbot';
 import { useUser, UserButton } from "@clerk/nextjs";
 import { useRouter } from 'next/navigation';
 
-const ShootingStars = () => {
-  const stars = Array.from({ length: 20 }, (_, i) => i);
+const ShootingStars = React.memo(() => {
+  const stars = useMemo(() => Array.from({ length: 20 }, (_, i) => i), []);
 
   return (
     <div className="fixed inset-0 z-0">
@@ -38,7 +38,9 @@ const ShootingStars = () => {
       ))}
     </div>
   );
-};
+});
+
+ShootingStars.displayName = 'ShootingStars';
 
 export default function Home() {
   const { isLoaded, isSignedIn, user } = useUser();
