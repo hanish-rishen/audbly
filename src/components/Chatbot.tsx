@@ -154,7 +154,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ analysis }) => {
         )}
         <div ref={messagesEndRef} />
       </div>
-      <div className="border-t border-gray-700 bg-gray-900 p-4">
+      <div className="border-t border-gray-700 bg-gray-900 p-4 mt-auto">
         <form onSubmit={handleSubmit} className="flex w-full items-center space-x-2">
           <Input
             type="text"
